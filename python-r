@@ -1,0 +1,19 @@
+# Use Python image
+FROM public.ecr.aws/lambda/python:3.12
+
+# Install R
+RUN dnf install -y R
+
+# Install R packages
+RUN R -e "install.packages('digest', repos='http://cran.r-project.org')"
+
+# Install Python packages
+ENV RPY2_CFFI_MODE=ABI
+COPY requirements.txt .
+RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+# Copy python code
+COPY ./seed/ ./seed
+COPY app/ ${LAMBDA_TASK_ROOT}/app/
+
+CMD [ "app.handler" ]
